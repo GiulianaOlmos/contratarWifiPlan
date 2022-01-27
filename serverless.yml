@@ -1,0 +1,53 @@
+
+service: contratarwifiplan
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  profile: giuli 
+
+
+functions:
+  pagoCredito: 
+    handler: ./src/lambdas/pagoCredito.handler
+  pagoDebito: 
+    handler: ./src/lambdas/pagoDebito.handler
+  formatError: 
+    handler: ./src/lambdas/formatError.handler
+  enviarData: 
+    handler: ./src/lambdas/enviarData.handler
+    events: 
+      - sqs: 
+          batchSize: 1
+          arn: 
+            Fn::GetAtt: [SendQueue, Arn]
+
+
+stepFunctions: 
+  stateMachines: 
+    contratarServicioWifi: 
+      name: ${self:service}-stateMachine
+      definition: ${file(./src/stepFunctions/contratarServicioWifi.asl.json)}
+      role: 
+        Fn::GetAtt: [ContratarServicioWifiMachineRole, Arn]
+
+
+resources: 
+  Resources: 
+    SendQueue: ${file(./src/resources/SQS.yml):SendQueue}
+    SendQueueDLQ: ${file(./src/resources/SQS.yml):SendQueueDLQ}
+    ContratarServicioWifiMachineRole: ${file(./src/resources/StepFunctionsRole.yml):ContratarServicioWifiMachineRole}
+
+  Outputs: 
+    SendQueueURL:
+      Value: 
+        Ref: SendQueue
+      Export:
+        Name: SendQueue
+
+
+plugins: 
+  - serverless-step-functions

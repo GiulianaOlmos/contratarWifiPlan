@@ -1,0 +1,10 @@
+SendQueue: 
+  Type: AWS::SQS::Queue
+  Properties: 
+    RedrivePolicy: 
+      deadLetterTargetArn: !GetAtt SendQueueDLQ.Arn
+      maxReceiveCount: 3
+  DependsOn: SendQueueDLQ
+
+SendQueueDLQ: 
+  Type: AWS::SQS::Queue

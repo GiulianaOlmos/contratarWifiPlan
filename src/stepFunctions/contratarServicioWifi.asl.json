@@ -1,0 +1,90 @@
+{
+    "Comment": "State Machine para contratar servicio de Wifi",
+    "StartAt": "Medios de Pago",
+    "States": {
+        "Medios de Pago": {
+            "Type": "Choice",
+            "Choices": [
+                {
+                    "Variable": "$.medioDePago",
+                    "StringEquals": "Debito",
+                    "Next": "Pago Debito"
+                }
+            ],
+            "Default": "Pago Credito"
+        },
+        "Pago Debito": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "pagoDebito",
+                        "Arn"
+                    ]
+                },
+                "Payload": {
+                    "Input.$": "$"
+                }
+            },
+            "Next": "Respuesta SQS",
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "Error"
+                    ],
+                    "Next": "Lambda Error"
+                }
+            ]
+        },
+        "Pago Credito": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "pagoCredito",
+                        "Arn"
+                    ]
+                },
+                "Payload": {
+                    "Input.$": "$"
+                }
+            },
+            "Next": "Respuesta SQS",
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "Error"
+                    ],
+                    "Next": "Lambda Error"
+                }
+            ]
+        },
+        "Lambda Error": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "formatError",
+                        "Arn"
+                    ]
+                },
+                "Payload": {
+                    "Input.$": "$"
+                }
+            },
+            "Next": "Respuesta SQS"
+        },
+        "Respuesta SQS": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:sqs:sendMessage",
+            "Parameters": {
+                "MessageBody.$": "$.Payload",
+                "QueueUrl": "${cf:contratarwifiplan-${opt:stage, 'dev'}.SendQueueURL}"
+            },
+            "End": true
+        }
+    }
+}

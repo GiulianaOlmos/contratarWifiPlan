@@ -1,0 +1,28 @@
+ContratarServicioWifiMachineRole:
+ Type: AWS::IAM::Role
+ Properties:
+   RoleName: ContratarServicioWifiMachineRole
+   AssumeRolePolicyDocument:
+     Statement:
+     - Effect: Allow
+       Principal:
+         Service:
+           - 'states.amazonaws.com'
+       Action:
+         - 'sts:AssumeRole'
+   Policies:
+     - PolicyName: statePolicy
+       PolicyDocument:
+         Statement:
+          - Effect: Allow
+            Action: 
+              - sqs:SendMessage
+            Resource: 
+              - Fn::GetAtt: [SendQueue, Arn]
+          - Effect: Allow
+            Action: 
+              - 'lambda:InvokeFunction'
+            Resource: 
+              - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'pagoCredito' ]]
+              - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'pagoDebito' ]]
+              - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'formatError' ]]
