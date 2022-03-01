@@ -24,7 +24,22 @@ functions:
           batchSize: 1
           arn: 
             Fn::GetAtt: [SendQueue, Arn]
-
+  obtenerPlanes:
+    handler: ./src/lambdas/obtenerPlanes.handler
+  elegirPlanes:
+    handler: ./src/lambdas/elegirPlanes.handler
+    environment:
+      URL_SQS: ${cf:contratarwifiplan-${opt:stage, 'dev'}.SendQueueURL}
+    role:
+      Fn::GetAtt: ['ElegirPlanesLambdaRole', 'Arn']
+  recibirRespuesta:
+    handler: ./src/lambdas/recibirRespuesta.handler
+    events:
+      - http:
+         path: /contratar-wifi/recibirRespuesta
+         method: post
+    role:
+      Fn::GetAtt: ['RecibirRespuestasLambdaRole', 'Arn']
 
 stepFunctions: 
   stateMachines: 
@@ -40,7 +55,9 @@ resources:
     SendQueue: ${file(./src/resources/SQS.yml):SendQueue}
     SendQueueDLQ: ${file(./src/resources/SQS.yml):SendQueueDLQ}
     ContratarServicioWifiMachineRole: ${file(./src/resources/StepFunctionsRole.yml):ContratarServicioWifiMachineRole}
-
+    ElegirPlanesLambdaRole: ${file(./src/resources/LambdaRole.yml):ElegirPlanesLambdaRole}
+    RecibirRespuestasLambdaRole: ${file(./src/resources/LambdaRole.yml):RecibirRespuestasLambdaRole}
+  
   Outputs: 
     SendQueueURL:
       Value: 

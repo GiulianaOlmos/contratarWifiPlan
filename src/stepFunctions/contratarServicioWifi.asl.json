@@ -1,7 +1,57 @@
 {
     "Comment": "State Machine para contratar servicio de Wifi",
-    "StartAt": "Medios de Pago",
+    "StartAt": "Obtener Planes",
     "States": {
+        "Obtener Planes": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "obtenerPlanes",
+                        "Arn"
+                    ]
+                },
+                "Payload": {
+                    "Input.$": "$"
+                }
+            },
+            "Next": "Elegir planes",
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "Error"
+                    ],
+                    "Next": "Lambda Error"
+                }
+            ]
+        },
+        "Elegir planes": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+            "TimeoutSeconds": 300,
+            "Parameters": {
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "elegirPlanes",
+                        "Arn"
+                    ]
+                },
+                "Payload": {
+                    "Input.$": "$",
+                    "token.$": "$$.Task.Token"
+                }
+            },
+            "Next": "Medios de Pago",
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "Error"
+                    ],
+                    "Next": "Lambda Error"
+                }
+            ]
+        },
         "Medios de Pago": {
             "Type": "Choice",
             "Choices": [

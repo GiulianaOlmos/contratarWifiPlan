@@ -1,0 +1,59 @@
+ElegirPlanesLambdaRole:
+ Type: AWS::IAM::Role
+ Properties:
+   RoleName: ElegirPlanesLambdaRole
+   AssumeRolePolicyDocument:
+     Statement:
+     - Effect: Allow
+       Principal:
+         Service:
+           - 'lambda.amazonaws.com'
+       Action:
+         - 'sts:AssumeRole'
+   Policies:
+     - PolicyName: statePolicy
+       PolicyDocument:
+         Statement:
+           - Effect: Allow
+             Action:
+               - sqs:SendMessage
+             Resource:
+               - Fn::GetAtt: [SendQueue, Arn]
+           - Effect: Allow
+             Action:
+               - 'logs:CreateLogGroup'
+               - 'logs:CreateLogStream'
+               - 'logs:PutLogEvents'
+               - 'logs:DescribeLogStreams'
+             Resource:
+               - 'arn:aws:logs:*:*:*'
+
+RecibirRespuestasLambdaRole:
+ Type: AWS::IAM::Role
+ Properties:
+   RoleName: RecibirRespuestasLambdaRole
+   AssumeRolePolicyDocument:
+     Statement:
+     - Effect: Allow
+       Principal:
+         Service:
+           - 'lambda.amazonaws.com'
+       Action:
+         - 'sts:AssumeRole'
+   Policies:
+     - PolicyName: statePolicy
+       PolicyDocument:
+         Statement:
+           - Effect: Allow
+             Action:
+               - states:SendTaskSuccess
+               - states:SendTaskFailure
+             Resource: "*"
+           - Effect: Allow
+             Action:
+               - 'logs:CreateLogGroup'
+               - 'logs:CreateLogStream'
+               - 'logs:PutLogEvents'
+               - 'logs:DescribeLogStreams'
+             Resource:
+               - 'arn:aws:logs:*:*:*'

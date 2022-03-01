@@ -26,3 +26,5 @@ ContratarServicioWifiMachineRole:
               - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'pagoCredito' ]]
               - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'pagoDebito' ]]
               - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'formatError' ]]
+              - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'obtenerPlanes' ]]
+              - !Join ['-', [ !Join [':', ['arn:aws:lambda',!Ref 'AWS::Region', !Ref 'AWS::AccountId' ,'function', !Ref 'AWS::StackName']], 'elegirPlanes' ]]
